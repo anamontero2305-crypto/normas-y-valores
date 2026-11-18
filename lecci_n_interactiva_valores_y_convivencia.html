@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lección Interactiva: Los Valores y Normas de Convivencia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Nunito & Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#3b82f6',
+                            purple: '#8b5cf6',
+                            pink: '#ec4899',
+                            yellow: '#f59e0b',
+                            green: '#10b981',
+                            bg: '#f8fafc'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Perspective for 3D Flashcards */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Drag and Drop animations */
+        .draggable-item {
+            touch-action: none;
+            cursor: grab;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        .drop-zone--over {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+            transform: scale(1.01);
+        }
+
+        /* Accordion transition */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+            opacity: 1;
+        }
+
+        /* Soft Pulse effect */
+        @keyframes softPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .pulse-effect {
+            animation: softPulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-800">
+
+    <!-- HEADER / NAVIGATION & PROGRESS BAR -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- App Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-500 flex items-center justify-center text-white shadow-md text-xl font-bold">
+                        🌟
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Ética y Valores • 3° Primaria</span>
+                        <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-none">Superpoderes de la Convivencia</h1>
+                    </div>
+                </div>
+
+                <!-- Mute / Sound Toggle -->
+                <button id="soundToggle" onclick="toggleSound()" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold flex items-center gap-2 transition" title="Activar/Desactivar Sonido">
+                    <span id="soundIcon">🔊</span>
+                    <span id="soundText" class="hidden sm:inline">Sonido: ON</span>
+                </button>
+            </div>
+
+            <!-- Progress Bar Section -->
+            <div class="mt-3">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+                    <span id="progressText">Progreso de la lección: 0%</span>
+                    <span id="stepIndicator">Paso 1 de 5</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden p-0.5">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 h-full rounded-full transition-all duration-500 w-[0%]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-slate-100 border-t border-slate-200">
+            <div class="max-w-5xl mx-auto px-2 flex overflow-x-auto no-scrollbar gap-1 py-1">
+                <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition bg-white text-blue-600 shadow-sm border border-slate-200 flex items-center gap-1.5">
+                    📖 1. Explorar
+                </button>
+                <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition text-slate-600 hover:bg-white/60 flex items-center gap-1.5">
+                    🃏 2. Flashcards
+                </button>
+                <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition text-slate-600 hover:bg-white/60 flex items-center gap-1.5">
+                    🧩 3. Clasificar
+                </button>
+                <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition text-slate-600 hover:bg-white/60 flex items-center gap-1.5">
+                    🎯 4. Mini Trivia
+                </button>
+                <button onclick="switchTab(5)" id="tab-btn-5" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition text-slate-600 hover:bg-white/60 flex items-center gap-1.5">
+                    🏆 5. Logros
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ================= SECTION 1: PRESENTACIÓN DEL CONTENIDO ================= -->
+        <section id="section-1" class="tab-content space-y-6">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase">¡Hola, Explora el Saber!</span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold mt-2 mb-2 font-heading">¿Qué son los Valores y las Normas?</h2>
+                    <p class="text-blue-100 text-sm md:text-base">
+                        Imagina que la convivencia es como jugar al fútbol o a tu videojuego favorito: ¡sin reglas ni respeto, todo sería un gran caos! Descubre los acordeones interactivos a continuación.
+                    </p>
+                </div>
+                <div class="absolute -right-6 -bottom-6 text-8xl opacity-20 pointer-events-none">🎮</div>
+            </div>
+
+            <!-- Accordion List -->
+            <div class="space-y-4">
+                <!-- Item 1 -->
+                <div class="border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200 hover:border-blue-300">
+                    <button onclick="toggleAccordion(1)" class="w-full px-6 py-4 flex items-center justify-between text-left font-bold text-slate-800 text-lg hover:bg-slate-50 focus:outline-none">
+                        <span class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl">🎲</span>
+                            Las Normas son como las reglas del juego
+                        </span>
+                        <span id="accordion-icon-1" class="transform transition-transform text-slate-400 text-xl font-bold">➕</span>
+                    </button>
+                    <div id="accordion-content-1" class="accordion-content px-6 bg-slate-50/50">
+                        <div class="py-4 border-t border-slate-100 text-slate-600 space-y-3">
+                            <p class="text-sm md:text-base">
+                                Cuando juegas a las escondidas o al parqués, necesitas reglas para que sea justo y divertido. 
+                                En la escuela y en casa, las <strong class="text-blue-600">Normas de Convivencia</strong> ayudan a que todos nos sintamos seguros, respetados y felices.
+                            </p>
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-xl text-xs md:text-sm text-amber-900">
+                                💡 <strong>Ejemplo sencillo:</strong> Levantar la mano para hablar en clase evita que todos gritemos al mismo tiempo. ¡Así todos podemos ser escuchados!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200 hover:border-blue-300">
+                    <button onclick="toggleAccordion(2)" class="w-full px-6 py-4 flex items-center justify-between text-left font-bold text-slate-800 text-lg hover:bg-slate-50 focus:outline-none">
+                        <span class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl">💎</span>
+                            Los Valores son tus Superpoderes Interiores
+                        </span>
+                        <span id="accordion-icon-2" class="transform transition-transform text-slate-400 text-xl font-bold">➕</span>
+                    </button>
+                    <div id="accordion-content-2" class="accordion-content px-6 bg-slate-50/50">
+                        <div class="py-4 border-t border-slate-100 text-slate-600 space-y-3">
+                            <p class="text-sm md:text-base">
+                                Los <strong class="text-purple-600">valores</strong> son cualidades hermosas que guían nuestras acciones. Nos enseñan a distinguir lo que está bien de lo que causa daño.
+                            </p>
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm font-semibold text-slate-700">
+                                <li class="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                                    <span class="text-lg">🤝</span> <strong>Respeto:</strong> Tratar a los demás como te gusta que te traten.
+                                </li>
+                                <li class="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                                    <span class="text-lg">💖</span> <strong>Empatía:</strong> Ponerte en los zapatos de la otra persona.
+                                </li>
+                                <li class="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                                    <span class="text-lg">✨</span> <strong>Honestidad:</strong> Decir siempre la verdad con valor.
+                                </li>
+                                <li class="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                                    <span class="text-lg">🌱</span> <strong>Tolerancia:</strong> Aceptar que todos somos diferentes y únicos.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200 hover:border-blue-300">
+                    <button onclick="toggleAccordion(3)" class="w-full px-6 py-4 flex items-center justify-between text-left font-bold text-slate-800 text-lg hover:bg-slate-50 focus:outline-none">
+                        <span class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl">📖</span>
+                            Cuento Corto: "El Equipaje Invisible de Lucas"
+                        </span>
+                        <span id="accordion-icon-3" class="transform transition-transform text-slate-400 text-xl font-bold">➕</span>
+                    </button>
+                    <div id="accordion-content-3" class="accordion-content px-6 bg-slate-50/50">
+                        <div class="py-4 border-t border-slate-100 text-slate-600 space-y-3">
+                            <div class="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm text-sm space-y-2">
+                                <p class="italic text-slate-700">
+                                    "Lucas llegó muy enojado al parque y empujó a un niño para subir rápido al resbalador. Nadie quiso jugar con él después de eso. Se sintió triste y solo."
+                                </p>
+                                <p>
+                                    Su abuela le dijo: <em>'Lucas, cuando usas la violencia guardas piedras pesadas en tus bolsillos. Pero cuando usas la <strong>amabilidad</strong> y pides turno, ¡te vuelves liviano y todos quieren compartir contigo!'</em>. 
+                                    Lucas pidió disculpas, aprendió a esperar su turno y disfrutó una tarde fantástica llena de amigos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next button -->
+            <div class="flex justify-end pt-4">
+                <button onclick="switchTab(2)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 flex items-center gap-2 transition hover:-translate-y-0.5">
+                    ¡Continuar a las Flashcards! ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: MEMORIZACIÓN & REPASO (FLASHCARDS 3D) ================= -->
+        <section id="section-2" class="tab-content hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full font-bold uppercase">Repaso Activo</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 font-heading">Flashcards Interactivas 3D</h2>
+                <p class="text-slate-600 text-sm">Toca o haz clic en cada tarjeta para girarla y descubrir la explicación de cada valor fundamental.</p>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+                
+                <!-- Card 1 -->
+                <div class="perspective-1000 h-64 cursor-pointer" onclick="flipCard(this)">
+                    <div class="card-inner relative w-full h-full transform-style-3d border border-slate-200 rounded-3xl shadow-md hover:shadow-xl bg-white">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-amber-400 to-orange-500 text-white flex flex-col items-center justify-between backface-hidden">
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">Valor #1</span>
+                            <div class="text-center">
+                                <div class="text-5xl mb-2">🤝</div>
+                                <h3 class="text-2xl font-bold font-heading">Respeto</h3>
+                            </div>
+                            <span class="text-xs text-amber-100 font-semibold animate-bounce">👇 Tap para girar</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-slate-900 text-white flex flex-col justify-between rotate-y-180 backface-hidden">
+                            <h4 class="text-amber-400 font-bold font-heading border-b border-slate-800 pb-2">Respeto</h4>
+                            <p class="text-xs md:text-sm text-slate-300">
+                                Valorar a los demás, escuchar sus opiniones aunque sean distintas a las tuyas y tratar con cuidado las cosas de los demás.
+                            </p>
+                            <button onclick="event.stopPropagation(); markCardLearned(1);" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">
+                                ¡Comprendido! ✨
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="perspective-1000 h-64 cursor-pointer" onclick="flipCard(this)">
+                    <div class="card-inner relative w-full h-full transform-style-3d border border-slate-200 rounded-3xl shadow-md hover:shadow-xl bg-white">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex flex-col items-center justify-between backface-hidden">
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">Valor #2</span>
+                            <div class="text-center">
+                                <div class="text-5xl mb-2">💖</div>
+                                <h3 class="text-2xl font-bold font-heading">Empatía</h3>
+                            </div>
+                            <span class="text-xs text-purple-100 font-semibold animate-bounce">👇 Tap para girar</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-slate-900 text-white flex flex-col justify-between rotate-y-180 backface-hidden">
+                            <h4 class="text-purple-400 font-bold font-heading border-b border-slate-800 pb-2">Empatía</h4>
+                            <p class="text-xs md:text-sm text-slate-300">
+                                Comprender los sentimientos de un amigo cuando está triste o enojado y apoyarlo como a ti te gustaría que te apoyaran.
+                            </p>
+                            <button onclick="event.stopPropagation(); markCardLearned(2);" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">
+                                ¡Comprendido! ✨
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="perspective-1000 h-64 cursor-pointer" onclick="flipCard(this)">
+                    <div class="card-inner relative w-full h-full transform-style-3d border border-slate-200 rounded-3xl shadow-md hover:shadow-xl bg-white">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex flex-col items-center justify-between backface-hidden">
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">Valor #3</span>
+                            <div class="text-center">
+                                <div class="text-5xl mb-2">💎</div>
+                                <h3 class="text-2xl font-bold font-heading">Honestidad</h3>
+                            </div>
+                            <span class="text-xs text-cyan-100 font-semibold animate-bounce">👇 Tap para girar</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-slate-900 text-white flex flex-col justify-between rotate-y-180 backface-hidden">
+                            <h4 class="text-cyan-400 font-bold font-heading border-b border-slate-800 pb-2">Honestidad</h4>
+                            <p class="text-xs md:text-sm text-slate-300">
+                                Decir la verdad siempre con respeto, admitir cuando cometemos un error y actuar de forma transparente y sincera.
+                            </p>
+                            <button onclick="event.stopPropagation(); markCardLearned(3);" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">
+                                ¡Comprendido! ✨
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="perspective-1000 h-64 cursor-pointer" onclick="flipCard(this)">
+                    <div class="card-inner relative w-full h-full transform-style-3d border border-slate-200 rounded-3xl shadow-md hover:shadow-xl bg-white">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex flex-col items-center justify-between backface-hidden">
+                            <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">Valor #4</span>
+                            <div class="text-center">
+                                <div class="text-5xl mb-2">🌱</div>
+                                <h3 class="text-2xl font-bold font-heading">Tolerancia</h3>
+                            </div>
+                            <span class="text-xs text-emerald-100 font-semibold animate-bounce">👇 Tap para girar</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-slate-900 text-white flex flex-col justify-between rotate-y-180 backface-hidden">
+                            <h4 class="text-emerald-400 font-bold font-heading border-b border-slate-800 pb-2">Tolerancia</h4>
+                            <p class="text-xs md:text-sm text-slate-300">
+                                Aceptar las diferencias culturales, gustos e ideas de los demás. Entender que la diversidad nos enriquece a todos.
+                            </p>
+                            <button onclick="event.stopPropagation(); markCardLearned(4);" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">
+                                ¡Comprendido! ✨
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <button onclick="switchTab(1)" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl transition">
+                    ⬅️ Volver
+                </button>
+                <button onclick="switchTab(3)" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl shadow-lg shadow-purple-200 flex items-center gap-2 transition hover:-translate-y-0.5">
+                    Ir a la Clasificación ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: PRÁCTICA & EJERCITACIÓN (DRAG & DROP) ================= -->
+        <section id="section-3" class="tab-content hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full font-bold uppercase">Ejercitación Práctica</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 font-heading">Clasifica las Acciones</h2>
+                <p class="text-slate-600 text-sm">Arrastra (o toca para seleccionar y asignar) cada tarjeta a su contenedor correcto.</p>
+            </div>
+
+            <!-- Source Draggable Container -->
+            <div class="bg-slate-100 p-4 rounded-3xl border border-slate-200 min-h-[110px]">
+                <h3 class="text-xs font-bold uppercase text-slate-500 mb-3 tracking-wider text-center">Acciones por clasificar:</h3>
+                <div id="drag-source" class="flex flex-wrap gap-3 justify-center">
+                    <div id="drag-1" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="positive" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>🙋‍♂️</span> Pedir la palabra levantando la mano
+                    </div>
+                    <div id="drag-2" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="negative" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>😤</span> Interrumpir a los demás al hablar
+                    </div>
+                    <div id="drag-3" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="positive" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>🙏</span> Pedir "por favor" y dar las "gracias"
+                    </div>
+                    <div id="drag-4" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="negative" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>🗑️</span> Arrojar basura en el suelo del salón
+                    </div>
+                    <div id="drag-5" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="positive" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>🤝</span> Ayudar a un compañero a levantarse
+                    </div>
+                    <div id="drag-6" draggable="true" ondragstart="handleDragStart(event)" onclick="handleCardClick(this)" data-category="negative" class="draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2">
+                        <span>🤫</span> Poner apodos pesados a los amigos
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drop Zones Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Zone Positive -->
+                <div id="zone-positive" data-target="positive" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleZoneClick(this)" class="drop-zone bg-emerald-50/50 border-2 border-dashed border-emerald-300 rounded-3xl p-5 min-h-[220px] transition flex flex-col">
+                    <div class="flex items-center gap-3 mb-3 border-b border-emerald-200 pb-2">
+                        <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">✓</div>
+                        <div>
+                            <h3 class="font-bold text-emerald-900 font-heading">Convivencia Positiva</h3>
+                            <p class="text-xs text-emerald-600">Acciones que construyen paz y respeto</p>
+                        </div>
+                    </div>
+                    <div id="zone-positive-list" class="flex flex-col gap-2 flex-grow"></div>
+                </div>
+
+                <!-- Zone Negative -->
+                <div id="zone-negative" data-target="negative" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleZoneClick(this)" class="drop-zone bg-rose-50/50 border-2 border-dashed border-rose-300 rounded-3xl p-5 min-h-[220px] transition flex flex-col">
+                    <div class="flex items-center gap-3 mb-3 border-b border-rose-200 pb-2">
+                        <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold">✕</div>
+                        <div>
+                            <h3 class="font-bold text-rose-900 font-heading">Necesitan Mejorar</h3>
+                            <p class="text-xs text-rose-600">Acciones que rompen las normas</p>
+                        </div>
+                    </div>
+                    <div id="zone-negative-list" class="flex flex-col gap-2 flex-grow"></div>
+                </div>
+            </div>
+
+            <!-- Action Status Feedback -->
+            <div id="drag-feedback" class="hidden p-4 rounded-2xl text-center font-bold text-sm"></div>
+
+            <div class="flex justify-between items-center pt-4">
+                <button onclick="switchTab(2)" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl transition">
+                    ⬅️ Volver
+                </button>
+                <button id="btn-to-quiz" onclick="switchTab(4)" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 flex items-center gap-2 transition hover:-translate-y-0.5">
+                    ¡Ir a la Mini Trivia! ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: EVALUACIÓN FORMATIVA (TRIVIA GAMIFICADA) ================= -->
+        <section id="section-4" class="tab-content hidden space-y-6">
+            <!-- Quiz Dashboard Header -->
+            <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <!-- Lives counter -->
+                    <div class="flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-2xl border border-rose-200">
+                        <span class="text-xs font-bold text-rose-700 uppercase">Vidas:</span>
+                        <div id="quiz-lives" class="flex gap-1 text-lg">❤️ ❤️ ❤️</div>
+                    </div>
+                    <!-- Score counter -->
+                    <div class="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-2xl border border-amber-200">
+                        <span class="text-xs font-bold text-amber-700 uppercase">Puntos:</span>
+                        <span id="quiz-score" class="font-heading font-extrabold text-amber-600 text-lg">0</span>
+                    </div>
+                </div>
+                <!-- Question indicator -->
+                <div class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-2xl">
+                    Pregunta <span id="quiz-current-num">1</span> de <span id="quiz-total-num">4</span>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="quiz-card" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-lg space-y-6 relative overflow-hidden">
+                <div class="space-y-2">
+                    <span id="quiz-category" class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-bold uppercase">Caso de la Vida Real</span>
+                    <h3 id="quiz-question" class="text-lg md:text-xl font-bold text-slate-800 font-heading">
+                        Cargando pregunta...
+                    </h3>
+                </div>
+
+                <!-- Quiz Options Grid -->
+                <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Options populated via JavaScript -->
+                </div>
+
+                <!-- Instant Feedback Banner -->
+                <div id="quiz-feedback" class="hidden p-4 rounded-2xl text-sm font-bold flex items-center justify-between">
+                    <span id="quiz-feedback-text"></span>
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition">
+                        Siguiente ➔
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <button onclick="switchTab(3)" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl transition">
+                    ⬅️ Volver
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 5: ACOMPAÑAMIENTO & PROGRESO (FINAL SCREEN) ================= -->
+        <section id="section-5" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-xl p-8 text-center space-y-6 relative overflow-hidden">
+                <div class="inline-block p-4 bg-amber-100 rounded-full text-5xl mb-2 animate-bounce">
+                    🏆
+                </div>
+                <div class="space-y-2 max-w-xl mx-auto">
+                    <h2 class="text-3xl font-extrabold text-slate-800 font-heading">¡Felicitaciones, Campeón de la Convivencia!</h2>
+                    <p class="text-slate-600 text-sm md:text-base">
+                        Has completado con éxito la lección sobre valores y normas. ¡Ahora tienes todos los superpoderes para ser un ciudadano ejemplar!
+                    </p>
+                </div>
+
+                <!-- Badges Obtained -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto pt-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center">
+                        <span class="text-4xl mb-1">🌟</span>
+                        <h4 class="font-bold text-sm font-heading">Explorador</h4>
+                        <p class="text-xs text-slate-500">Lección leída</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center">
+                        <span class="text-4xl mb-1">🧩</span>
+                        <h4 class="font-bold text-sm font-heading">Clasificador Pro</h4>
+                        <p class="text-xs text-slate-500">Práctica superada</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center">
+                        <span class="text-4xl mb-1">👑</span>
+                        <h4 class="font-bold text-sm font-heading">Maestro de Valores</h4>
+                        <p class="text-xs text-slate-500">Trivia completada</p>
+                    </div>
+                </div>
+
+                <!-- Final Stats Summary -->
+                <div class="bg-slate-50 p-4 rounded-2xl max-w-md mx-auto border border-slate-200 flex justify-around">
+                    <div>
+                        <span class="text-xs text-slate-500 font-bold uppercase">Puntaje Final</span>
+                        <div id="final-score" class="text-2xl font-extrabold text-amber-500 font-heading">0 pts</div>
+                    </div>
+                    <div class="border-r border-slate-200"></div>
+                    <div>
+                        <span class="text-xs text-slate-500 font-bold uppercase">Estado</span>
+                        <div class="text-2xl font-extrabold text-emerald-500 font-heading">¡Aprobado!</div>
+                    </div>
+                </div>
+
+                <!-- Restart Button -->
+                <div class="pt-4">
+                    <button onclick="restartLesson()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg transition transform hover:scale-105">
+                        🔄 Reiniciar Lección
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER & AUTHOR CREDITS -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Recurso Educativo Digital Interactivo</span>
+            </div>
+            <!-- MANDATORY CREDITS -->
+            <div class="font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                Prof. Ana Montero Rojas • Unimag • 2026
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. AUDIO SYNTHESIZER (WEB AUDIO API)
+           ========================================================================== */
+        let audioCtx = null;
+        let isMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'flip') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(180, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'victory') {
+                // Short fanfare
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(freq, now + i * 0.12);
+                    g.gain.setValueAtTime(0.15, now + i * 0.12);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.12 + 0.2);
+                    o.start(now + i * 0.12);
+                    o.stop(now + i * 0.12 + 0.2);
+                });
+            }
+        }
+
+        function toggleSound() {
+            isMuted = !isMuted;
+            document.getElementById('soundIcon').innerText = isMuted ? '🔇' : '🔊';
+            document.getElementById('soundText').innerText = isMuted ? 'Sonido: OFF' : 'Sonido: ON';
+        }
+
+        /* ==========================================================================
+           2. NAVIGATION & PROGRESS MANAGEMENT
+           ========================================================================== */
+        let currentTab = 1;
+        let learnedCards = new Set();
+        let classifiedCount = 0;
+        let totalDraggables = 6;
+        let quizCompleted = false;
+
+        function switchTab(tabNum) {
+            playSound('click');
+            currentTab = tabNum;
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Show selected section
+            const activeSection = document.getElementById(`section-${tabNum}`);
+            if (activeSection) activeSection.classList.remove('hidden');
+
+            // Update Tab styles
+            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                if (idx + 1 === tabNum) {
+                    btn.className = "tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition bg-white text-blue-600 shadow-sm border border-slate-200 flex items-center gap-1.5";
+                } else {
+                    btn.className = "tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition text-slate-600 hover:bg-white/60 flex items-center gap-1.5";
+                }
+            });
+
+            document.getElementById('stepIndicator').innerText = `Paso ${tabNum} de 5`;
+            updateProgress();
+
+            if (tabNum === 5) {
+                triggerVictory();
+            }
+        }
+
+        function updateProgress() {
+            // Calculation logic based on actions completed
+            let progress = (currentTab - 1) * 20;
+
+            // Add extra bonus for activities completed
+            if (learnedCards.size === 4) progress += 5;
+            if (classifiedCount === totalDraggables) progress += 5;
+            if (quizCompleted) progress += 10;
+
+            progress = Math.min(Math.max(progress, 0), 100);
+
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').innerText = `Progreso de la lección: ${Math.round(progress)}%`;
+        }
+
+        /* ==========================================================================
+           3. ACCORDION LOGIC
+           ========================================================================== */
+        function toggleAccordion(index) {
+            playSound('click');
+            const content = document.getElementById(`accordion-content-${index}`);
+            const icon = document.getElementById(`accordion-icon-${index}`);
+            
+            const isOpen = content.classList.contains('open');
+
+            // Close all
+            document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+            document.querySelectorAll('[id^="accordion-icon-"]').forEach(i => i.innerText = '➕');
+
+            if (!isOpen) {
+                content.classList.add('open');
+                icon.innerText = '➖';
+            }
+        }
+
+        /* ==========================================================================
+           4. 3D FLASHCARDS LOGIC
+           ========================================================================== */
+        function flipCard(cardEl) {
+            playSound('flip');
+            const inner = cardEl.querySelector('.card-inner');
+            inner.classList.toggle('rotate-y-180');
+        }
+
+        function markCardLearned(cardId) {
+            playSound('correct');
+            learnedCards.add(cardId);
+            updateProgress();
+        }
+
+        /* ==========================================================================
+           5. DRAG AND DROP / TAP-TO-ASSIGN LOGIC
+           ========================================================================== */
+        let selectedCardForTap = null;
+
+        function handleDragStart(e) {
+            playSound('click');
+            e.dataTransfer.setData('text/plain', e.target.id);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drop-zone--over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drop-zone--over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const zone = e.currentTarget;
+            zone.classList.remove('drop-zone--over');
+
+            const id = e.dataTransfer.getData('text/plain');
+            const draggableElement = document.getElementById(id);
+            if (!draggableElement) return;
+
+            processClassification(draggableElement, zone);
+        }
+
+        // Tap selection support for Touch devices
+        function handleCardClick(cardEl) {
+            playSound('click');
+            if (selectedCardForTap) {
+                selectedCardForTap.classList.remove('ring-4', 'ring-blue-400');
+            }
+
+            if (selectedCardForTap === cardEl) {
+                selectedCardForTap = null;
+                return;
+            }
+
+            selectedCardForTap = cardEl;
+            cardEl.classList.add('ring-4', 'ring-blue-400');
+        }
+
+        function handleZoneClick(zoneEl) {
+            if (selectedCardForTap) {
+                processClassification(selectedCardForTap, zoneEl);
+                selectedCardForTap.classList.remove('ring-4', 'ring-blue-400');
+                selectedCardForTap = null;
+            }
+        }
+
+        function processClassification(cardEl, zoneEl) {
+            const cardCategory = cardEl.getAttribute('data-category');
+            const zoneTarget = zoneEl.getAttribute('data-target');
+
+            const feedbackEl = document.getElementById('drag-feedback');
+            feedbackEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
+
+            if (cardCategory === zoneTarget) {
+                playSound('correct');
+                const targetList = document.getElementById(`zone-${zoneTarget}-list`);
+                cardEl.setAttribute('draggable', 'false');
+                cardEl.classList.remove('hover:border-blue-400', 'draggable-item');
+                cardEl.classList.add('opacity-90', 'border-emerald-400', 'bg-white');
+                cardEl.onclick = null;
+                targetList.appendChild(cardEl);
+
+                classifiedCount++;
+                updateProgress();
+
+                feedbackEl.classList.add('bg-emerald-100', 'text-emerald-800');
+                feedbackEl.innerText = '✨ ¡Excelente clasificación!';
+
+                if (classifiedCount === totalDraggables) {
+                    feedbackEl.innerText = '🎉 ¡Felicidades! Has clasificado todas las acciones correctamente.';
+                }
+            } else {
+                playSound('error');
+                feedbackEl.classList.add('bg-rose-100', 'text-rose-800');
+                feedbackEl.innerText = '❌ Ups, piénsalo mejor. ¿Esa acción ayuda a la convivencia?';
+            }
+
+            setTimeout(() => {
+                feedbackEl.classList.add('hidden');
+            }, 2500);
+        }
+
+        /* ==========================================================================
+           6. GAMIFIED TRIVIA LOGIC
+           ========================================================================== */
+        const quizQuestions = [
+            {
+                category: "Respeto en la Escuela",
+                question: "Si tu maestro o un compañero está hablando frente a la clase, ¿qué debes hacer?",
+                options: [
+                    { text: "Escuchar en silencio y levantar la mano si quiero hablar", correct: true },
+                    { text: "Hablar en voz alta con mi amigo de al lado", correct: false },
+                    { text: "Pararme y empezar a cantar", correct: false }
+                ],
+                explanation: "¡Muy bien! Escuchar atentamente es la mejor forma de mostrar respeto."
+            },
+            {
+                category: "Empatía",
+                question: "Ves que a un compañero nuevo se le cayeron los cuadernos al suelo. ¿Qué acción muestra valor?",
+                options: [
+                    { text: "Pasar corriendo por encima sin prestar atención", correct: false },
+                    { text: "Ayudarle amablemente a recogerlos y darle la bienvenida", correct: true },
+                    { text: "Reírme en voz alta de lo sucedido", correct: false }
+                ],
+                explanation: "¡Excelente! La empatía nos impulsa a ayudar cuando alguien lo necesita."
+            },
+            {
+                category: "Honestidad",
+                question: "Sin querer quebraste una regla o rompiste un lápiz prestado. ¿Qué es lo correcto?",
+                options: [
+                    { text: "Decir la verdad, pedir disculpas y buscar cómo solucionarlo", correct: true },
+                    { text: "Culpar a otra persona para que no me regañen", correct: false },
+                    { text: "Esconder el lápiz roto y no decir nada", correct: false }
+                ],
+                explanation: "¡Así se hace! La honestidad genera confianza y nos hace mejores personas."
+            },
+            {
+                category: "Normas de Juego",
+                question: "Durante el recreo, todos quieren usar la única cancha de juegos. ¿Cuál es la mejor solución?",
+                options: [
+                    { text: "Organizar turnos o jugar todos un gran partido juntos", correct: true },
+                    { text: "Empujar a los demás para quedarme con la cancha solo", correct: false },
+                    { text: "Enojarme e irme a un rincón", correct: false }
+                ],
+                explanation: "¡Perfecto! Dialogar y compartir permite que todos disfrutemos por igual."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let lives = 3;
+
+        function loadQuestion() {
+            const q = quizQuestions[currentQuestionIdx];
+            document.getElementById('quiz-current-num').innerText = currentQuestionIdx + 1;
+            document.getElementById('quiz-total-num').innerText = quizQuestions.length;
+            document.getElementById('quiz-category').innerText = q.category;
+            document.getElementById('quiz-question').innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            // Hide feedback
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-4 text-left rounded-2xl border-2 border-slate-200 hover:border-blue-500 bg-white hover:bg-blue-50/50 font-semibold text-slate-700 text-sm transition flex items-center justify-between";
+                btn.innerHTML = `<span>${opt.text}</span> <span class="text-slate-300">➡️</span>`;
+                btn.onclick = () => selectOption(btn, opt.correct, q.explanation);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(btnEl, isCorrect, explanation) {
+            // Disable all option buttons
+            const options = document.querySelectorAll('#quiz-options button');
+            options.forEach(b => b.disabled = true);
+
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const feedbackText = document.getElementById('quiz-feedback-text');
+            feedbackEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (isCorrect) {
+                playSound('correct');
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                
+                score += 100;
+                document.getElementById('quiz-score').innerText = score;
+                
+                feedbackEl.classList.add('bg-emerald-100', 'text-emerald-900');
+                feedbackText.innerText = explanation;
+            } else {
+                playSound('error');
+                btnEl.classList.remove('border-slate-200', 'bg-white');
+                btnEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+
+                lives--;
+                updateLivesDisplay();
+
+                feedbackEl.classList.add('bg-rose-100', 'text-rose-900');
+                feedbackText.innerText = "❌ No te preocupes, ¡aprender de los errores también nos hace fuertes!";
+            }
+
+            if (lives <= 0) {
+                document.getElementById('quiz-next-btn').innerText = "Reintentar 🔄";
+            } else if (currentQuestionIdx === quizQuestions.length - 1) {
+                document.getElementById('quiz-next-btn').innerText = "Ver Logros 🏆";
+            }
+        }
+
+        function updateLivesDisplay() {
+            const hearts = '❤️ '.repeat(Math.max(0, lives)) + '🖤 '.repeat(Math.max(0, 3 - lives));
+            document.getElementById('quiz-lives').innerText = hearts.trim();
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            if (lives <= 0) {
+                // Reset Quiz
+                lives = 3;
+                score = 0;
+                currentQuestionIdx = 0;
+                document.getElementById('quiz-score').innerText = score;
+                document.getElementById('quiz-next-btn').innerText = "Siguiente ➔";
+                updateLivesDisplay();
+                loadQuestion();
+                return;
+            }
+
+            currentQuestionIdx++;
+            if (currentQuestionIdx < quizQuestions.length) {
+                loadQuestion();
+            } else {
+                quizCompleted = true;
+                updateProgress();
+                switchTab(5);
+            }
+        }
+
+        /* ==========================================================================
+           7. FINAL SCREEN & RESTART LOGIC
+           ========================================================================== */
+        function triggerVictory() {
+            playSound('victory');
+            document.getElementById('final-score').innerText = `${score} pts`;
+
+            // Confetti animation launch
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function restartLesson() {
+            playSound('click');
+            learnedCards.clear();
+            classifiedCount = 0;
+            quizCompleted = false;
+            currentQuestionIdx = 0;
+            score = 0;
+            lives = 3;
+
+            // Reset Draggables back to source container
+            const dragSource = document.getElementById('drag-source');
+            document.querySelectorAll('[id^="drag-"]').forEach(item => {
+                item.setAttribute('draggable', 'true');
+                item.className = "draggable-item bg-white px-4 py-3 rounded-2xl border-2 border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:border-blue-400 transition flex items-center gap-2";
+                item.onclick = function() { handleCardClick(this); };
+                dragSource.appendChild(item);
+            });
+
+            document.getElementById('zone-positive-list').innerHTML = '';
+            document.getElementById('zone-negative-list').innerHTML = '';
+
+            // Reset Quiz UI
+            document.getElementById('quiz-score').innerText = '0';
+            updateLivesDisplay();
+            loadQuestion();
+
+            // Go to Tab 1
+            switchTab(1);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadQuestion();
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
